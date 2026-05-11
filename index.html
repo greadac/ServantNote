@@ -171,7 +171,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
   <header class="hdr">
     <div>
       <h1>Arca봉사자노트</h1>
-      <div class="sub">가톨릭 그룹공부 봉사자 기록</div>
+      <div class="sub">그룹공부 봉사자 기록</div>
     </div>
     <div class="hdr-right">
       <button class="hdr-btn" onclick="showGuide()">?</button>
@@ -218,15 +218,15 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
         <div class="card-hdr"><span class="card-title">봉사자 기본정보</span></div>
         <div class="card-body">
           <div class="field-row">
-            <div class="field"><label>공부하는 곳</label><input type="text" id="parish" placeholder="예) 구포성당" oninput="autoSave()"></div>
-            <div class="field"><label>요일 · 시간</label><input type="text" id="schedule" placeholder="예) 월 18:30" oninput="autoSave()"></div>
+            <div class="field"><label>공부하는 곳</label><input type="text" id="parish" placeholder="예) 중앙성당" oninput="autoSave()"></div>
+            <div class="field"><label>요일 · 시간</label><input type="text" id="schedule" placeholder="예) 월 20:00" oninput="autoSave()"></div>
           </div>
-          <div class="field"><label>그룹 공부 주제</label><input type="text" id="topic" placeholder="예) 요한" oninput="autoSave();updateEditTitle()"></div>
+          <div class="field"><label>그룹 공부 주제</label><input type="text" id="topic" placeholder="예) 창세기" oninput="autoSave();updateEditTitle()"></div>
           <div class="field-row">
             <div class="field"><label>이름</label><input type="text" id="vol_name" placeholder="봉사자 이름" oninput="autoSave()"></div>
             <div class="field"><label>세례명</label><input type="text" id="vol_bap" placeholder="세례명" oninput="autoSave()"></div>
           </div>
-          <div class="field"><label>생년월일</label><input type="text" id="vol_birth" placeholder="예) 1980.01.01" oninput="autoSave()"></div>
+          <div class="field"><label>생년월일</label><input type="text" id="vol_birth" placeholder="예) 1990.01.01" oninput="autoSave()"></div>
           <div class="field"><label>주소 (자택)</label><input type="text" id="addr_home" placeholder="자택 주소" oninput="autoSave()"></div>
           <div class="field"><label>대학 / 직장</label><input type="text" id="addr_work" placeholder="대학 또는 직장" oninput="autoSave()"></div>
           <div class="field-row">
@@ -260,7 +260,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
         <div class="card-hdr"><span class="card-title">날짜 관리</span></div>
         <div class="card-body">
           <div class="att-date-row">
-            <input type="text" id="new-date" placeholder="날짜 입력 (예: 1/26)" onkeydown="if(event.key==='Enter')addDateCol()">
+            <input type="text" id="new-date" placeholder="날짜 입력 (예: 1과 9/9)" onkeydown="if(event.key==='Enter')addDateCol()">
             <button class="btn btn-green" onclick="addDateCol()">＋ 추가</button>
             <button class="btn btn-red" onclick="removeLastDate()">삭제</button>
           </div>
