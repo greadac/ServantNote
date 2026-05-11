@@ -135,6 +135,10 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
 .list-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .list-actions .btn{flex:1;justify-content:center;font-size:12px}
 
+/* 날짜 칩 */
+.date-chip{display:inline-flex;align-items:center;background:var(--accent-light);color:var(--accent2);padding:6px 14px;border-radius:16px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--accent2);gap:4px;-webkit-tap-highlight-color:transparent}
+.date-chip:active{opacity:.75}
+
 /* 가이드 모달 */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center}
 .modal-overlay.active{display:flex}
@@ -262,9 +266,9 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
           <div class="att-date-row">
             <input type="text" id="new-date" placeholder="입력(예: 1과 9/9)" onkeydown="if(event.key==='Enter')addDateCol()">
             <button class="btn btn-green" onclick="addDateCol()">＋ 추가</button>
-            <button class="btn btn-red" onclick="removeLastDate()">삭제</button>
           </div>
-          <div id="date-chips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <div id="date-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
+          <p style="font-size:11px;color:var(--text3);margin-top:10px">날짜를 탭하면 수정하거나 삭제할 수 있어요.</p>
         </div>
       </div>
       <div class="card">
@@ -371,6 +375,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
         <div class="guide-body">
           <ul>
             <li>날짜 입력란에 <strong>1</strong>과 <strong>1/26</strong> 형식으로 입력 후 <span class="guide-chip chip-g">＋ 추가</span>를 눌러요.</li>
+            <li>추가된 날짜를 <strong>탭하면</strong> 수정하거나 삭제할 수 있어요.</li>
             <li>각 그룹원의 출결을 아래에서 선택하세요:</li>
           </ul>
           <div class="att-demo">
@@ -381,6 +386,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
           <ul style="margin-top:8px">
             <li><strong style="color:#1a6e2e">○</strong> 출석 &nbsp; <strong style="color:#7a2020">×</strong> 결석 &nbsp; <strong style="color:#7a5800">△</strong> 지각/조퇴</li>
           </ul>
+          <div class="guide-note">⚠️ 날짜를 삭제하면 해당 날짜의 출결 데이터도 함께 삭제돼요.</div>
         </div>
       </div>
 
@@ -423,8 +429,29 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+<!-- ══════════════════════════════
+     날짜 편집 모달
+══════════════════════════════ -->
+<div id="date-edit-modal" class="modal-overlay" onclick="if(event.target===this)hideDateModal()">
+  <div class="modal" style="max-height:50vh">
+    <div class="modal-hdr">
+      <h2 id="date-modal-title">날짜 수정</h2>
+      <button class="modal-close" onclick="hideDateModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <div class="field" style="margin-bottom:16px">
+        <label>날짜 수정</label>
+        <input type="text" id="date-edit-input" placeholder="예) 1/26" style="font-size:18px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;width:100%;font-family:'Nanum Gothic',sans-serif;color:var(--text)">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-accent" style="flex:1;justify-content:center;padding:12px" onclick="confirmDateEdit()">✔ 저장</button>
+        <button class="btn btn-red" style="flex:1;justify-content:center;padding:12px" onclick="confirmDateDelete()">🗑 삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ════════ 데이터 ════════ */
 let records=[], currentId=null;
 function makeRecord(){
   return{id:Date.now(),topic:'',parish:'',schedule:'',date_start:'',
@@ -567,20 +594,81 @@ function renderMembers(){
 }
 
 /* ════════ 출석부 ════════ */
-function addDateCol(){ const rec=currentRec();if(!rec)return; const v=document.getElementById('new-date').value.trim(); if(!v){alert('날짜를 입력하세요. 예) 1/26');return;} rec.dateCols.push(v); document.getElementById('new-date').value=''; saveAll();renderAtt();renderDateChips(); }
-function removeLastDate(){ const rec=currentRec();if(!rec||!rec.dateCols.length)return; if(!confirm(`「${rec.dateCols[rec.dateCols.length-1]}」 날짜를 삭제할까요?`))return; rec.dateCols.pop();saveAll();renderAtt();renderDateChips(); }
-function renderDateChips(){ const rec=currentRec();const el=document.getElementById('date-chips');if(!el)return; if(!rec||!rec.dateCols.length){el.innerHTML='';return;} el.innerHTML=rec.dateCols.map(d=>`<span style="background:var(--accent-light);color:var(--accent2);padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700">${d}</span>`).join(''); }
-function updateAtt(i,j,val,sel){ const rec=currentRec();if(!rec)return; rec.attData[`${i}_${j}`]=val;saveAll(); sel.className='att-sel '+(val==='○'?'att-o':val==='×'?'att-x':val==='△'?'att-tri':''); }
+function addDateCol(){
+  const rec=currentRec();if(!rec)return;
+  const v=document.getElementById('new-date').value.trim();
+  if(!v){alert('날짜를 입력하세요. 예) 1/26');return;}
+  rec.dateCols.push(v);
+  document.getElementById('new-date').value='';
+  saveAll();renderAtt();renderDateChips();
+}
+
+// 날짜 편집 모달
+let editingDateIdx=null;
+function openDateModal(idx){
+  const rec=currentRec();if(!rec)return;
+  editingDateIdx=idx;
+  document.getElementById('date-modal-title').textContent=`날짜 수정 (${idx+1}번째)`;
+  document.getElementById('date-edit-input').value=rec.dateCols[idx];
+  document.getElementById('date-edit-modal').classList.add('active');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('date-edit-input').focus(),100);
+}
+function hideDateModal(){
+  document.getElementById('date-edit-modal').classList.remove('active');
+  document.body.style.overflow='';
+  editingDateIdx=null;
+}
+function confirmDateEdit(){
+  const rec=currentRec();if(!rec||editingDateIdx===null)return;
+  const v=document.getElementById('date-edit-input').value.trim();
+  if(!v){alert('날짜를 입력하세요.');return;}
+  rec.dateCols[editingDateIdx]=v;
+  saveAll();renderAtt();renderDateChips();
+  hideDateModal();
+}
+function confirmDateDelete(){
+  const rec=currentRec();if(!rec||editingDateIdx===null)return;
+  const label=rec.dateCols[editingDateIdx];
+  if(!confirm(`「${label}」 날짜를 삭제할까요?\n해당 날짜의 출결 데이터도 함께 삭제됩니다.`))return;
+  // attData 인덱스 재정렬
+  const total=rec.dateCols.length;
+  rec.members.forEach((_,mi)=>{
+    for(let j=editingDateIdx;j<total-1;j++){
+      rec.attData[`${mi}_${j}`]=rec.attData[`${mi}_${j+1}`]||'';
+    }
+    delete rec.attData[`${mi}_${total-1}`];
+  });
+  rec.dateCols.splice(editingDateIdx,1);
+  saveAll();renderAtt();renderDateChips();
+  hideDateModal();
+}
+
+function renderDateChips(){
+  const rec=currentRec();const el=document.getElementById('date-chips');if(!el)return;
+  if(!rec||!rec.dateCols.length){el.innerHTML='';return;}
+  el.innerHTML=rec.dateCols.map((d,i)=>
+    `<span class="date-chip" onclick="openDateModal(${i})">
+      ${esc(d)} <span style="font-size:11px;opacity:.6">✎</span>
+    </span>`
+  ).join('');
+}
+
+function updateAtt(i,j,val,sel){
+  const rec=currentRec();if(!rec)return;
+  rec.attData[`${i}_${j}`]=val;saveAll();
+  sel.className='att-sel '+(val==='○'?'att-o':val==='×'?'att-x':val==='△'?'att-tri':'');
+}
 function renderAtt(){
   const rec=currentRec();
   const el=document.getElementById('att-list');
   renderDateChips();
-  if(!rec||!rec.members.length||!rec.dateCols.length){ el.innerHTML=`<div class="empty-hint">그룹원과 날짜를 먼저 추가하세요.</div>`;return; }
+  if(!rec||!rec.members.length||!rec.dateCols.length){el.innerHTML=`<div class="empty-hint">그룹원과 날짜를 먼저 추가하세요.</div>`;return;}
   el.innerHTML=rec.members.map((m,i)=>`
     <div class="att-member-block">
       <div class="att-member-name">${i+1}. ${esc(m.name)||'(미입력)'} ${m.bap?'<span style="font-size:11px;color:var(--text3)">'+esc(m.bap)+'</span>':''}</div>
       <div class="att-dates-grid">
-        ${rec.dateCols.map((d,j)=>{ const v=rec.attData[`${i}_${j}`]||''; const cls='att-sel '+(v==='○'?'att-o':v==='×'?'att-x':v==='△'?'att-tri':''); const opts=['','○','×','△'].map(o=>`<option value="${o}"${v===o?' selected':''}>${o||'—'}</option>`).join(''); return`<div class="att-date-item"><span class="att-date-label">${d}</span><select class="${cls}" onchange="updateAtt(${i},${j},this.value,this)">${opts}</select></div>`; }).join('')}
+        ${rec.dateCols.map((d,j)=>{const v=rec.attData[`${i}_${j}`]||'';const cls='att-sel '+(v==='○'?'att-o':v==='×'?'att-x':v==='△'?'att-tri':'');const opts=['','○','×','△'].map(o=>`<option value="${o}"${v===o?' selected':''}>${o||'—'}</option>`).join('');return`<div class="att-date-item"><span class="att-date-label">${d}</span><select class="${cls}" onchange="updateAtt(${i},${j},this.value,this)">${opts}</select></div>`;}).join('')}
       </div>
     </div>`).join('');
 }
