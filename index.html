@@ -370,7 +370,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
         <div class="guide-title"><span class="guide-num">3</span>② 출석부 입력</div>
         <div class="guide-body">
           <ul>
-            <li>날짜 입력란에 <strong>1/26</strong> 형식으로 입력 후 <span class="guide-chip chip-g">＋ 추가</span>를 눌러요.</li>
+            <li>날짜 입력란에 <strong>1</strong>과 <strong>1/26</strong> 형식으로 입력 후 <span class="guide-chip chip-g">＋ 추가</span>를 눌러요.</li>
             <li>각 그룹원의 출결을 아래에서 선택하세요:</li>
           </ul>
           <div class="att-demo">
@@ -389,9 +389,10 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
         <div class="guide-body">
           <ul>
             <li><strong>마침일</strong>을 입력하면 총 공부 기간이 자동 계산돼요.</li>
-            <li>각 그룹원의 <strong>연수 차수</strong>, 기록 완료 여부를 입력하세요.</li>
+            <li>각 그룹원의 <strong>연수 차수</strong>를 입력하세요.</li>
             <li>특기사항과 소감을 작성하고 <span class="guide-chip chip-acc">🖨️ 마침 보고서 PDF</span>로 저장하세요.</li>
           </ul>
+          <div class="guide-note">📋 그룹공부 기록과 연수사항 명부 기록은 센터에서 작성해요. PDF에 빈칸으로 출력됩니다.</div>
         </div>
       </div>
 
@@ -588,7 +589,7 @@ function renderAtt(){
 function renderR3Summary(){ const rec=currentRec();const el=document.getElementById('r3-summary');if(!el||!rec)return; const v=[rec.vol_name,rec.vol_bap].filter(Boolean).join(' '); el.innerHTML=`<strong>${rec.topic||'—'}</strong><br>📍 ${rec.parish||'—'} &nbsp;·&nbsp; ${rec.schedule||'—'}<br>봉사자: ${v||'—'} &nbsp;·&nbsp; 시작일: ${rec.date_start?fmtDate(rec.date_start):'—'}`; calcPeriod(); }
 function calcPeriod(){ const rec=currentRec();const pe=document.getElementById('r3_period');const wr=document.getElementById('r3-period-wrap');if(!rec||!pe)return; const s=rec.date_start,e=document.getElementById('date_end')?.value||rec.date_end; if(!s||!e){if(wr)wr.style.display='none';return;} const ds=new Date(s),de=new Date(e);if(de<ds){if(wr)wr.style.display='none';return;} let y=de.getFullYear()-ds.getFullYear(),m=de.getMonth()-ds.getMonth();if(m<0){y--;m+=12;} pe.textContent=`${y}년 ${m}개월`;if(wr)wr.style.display='block'; }
 function updateReport(i,field,val){ const rec=currentRec();if(!rec)return; if(!rec.reportData[i])rec.reportData[i]={train:'',rec:'',reg:''}; rec.reportData[i][field]=val;saveAll(); }
-function renderReport(){ const rec=currentRec();const el=document.getElementById('report-list');if(!rec||!rec.members.length){el.innerHTML=`<div class="empty-hint">① 시작 보고서에서 그룹원을 추가하세요.</div>`;return;} el.innerHTML=rec.members.map((m,i)=>{ if(!rec.reportData[i])rec.reportData[i]={train:'',rec:'',reg:''};const rd=rec.reportData[i]; return`<div class="report-card"><div class="report-card-hdr">${i+1}. ${esc(m.name)||'(미입력)'} <span style="font-size:11px;color:var(--text3)">${esc(m.bap)||''}</span></div><div class="report-card-body"><div class="report-field"><label>지금까지 받은 연수</label><input value="${esc(rd.train)}" onchange="updateReport(${i},'train',this.value)" placeholder="예) 1차"></div><div class="report-field"><label>그룹공부 기록완료</label><input value="${esc(rd.rec)}" onchange="updateReport(${i},'rec',this.value)" placeholder="완료 / 미완료"></div><div class="report-field"><label>연수사항 명부 기록완료</label><input value="${esc(rd.reg)}" onchange="updateReport(${i},'reg',this.value)" placeholder="완료 / 미완료"></div></div></div>`; }).join(''); }
+function renderReport(){ const rec=currentRec();const el=document.getElementById('report-list');if(!rec||!rec.members.length){el.innerHTML=`<div class="empty-hint">① 시작 보고서에서 그룹원을 추가하세요.</div>`;return;} el.innerHTML=rec.members.map((m,i)=>{ if(!rec.reportData[i])rec.reportData[i]={train:'',rec:'',reg:''};const rd=rec.reportData[i]; return`<div class="report-card"><div class="report-card-hdr">${i+1}. ${esc(m.name)||'(미입력)'} <span style="font-size:11px;color:var(--text3)">${esc(m.bap)||''}</span></div><div class="report-card-body"><div class="report-field"><label>지금까지 받은 연수</label><input value="${esc(rd.train)}" onchange="updateReport(${i},'train',this.value)" placeholder="예) 1차"></div></div></div>`; }).join(''); }
 
 /* ════════ 유틸 ════════ */
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
