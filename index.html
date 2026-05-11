@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arca봉사자노트</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: #d6d0c4;
+  --border2: #bfb8aa;
+  --text: #1a1814;
+  --text2: #5a5650;
+  --text3: #8a8480;
+  --accent: #3d5a3e;
+  --accent2: #5a7d5c;
+  --accent-light: #e8f0e8;
+  --red: #7a2020;
+  --red-light: #fdf0f0;
+  --radius: 6px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px}
+
+/* 공통 헤더 */
+.app-header{background:var(--accent);color:#fff;padding:16px 32px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.18)}
+.app-header h1{font-family:'Nanum Myeongjo',serif;font-size:17px;font-weight:700;letter-spacing:.04em;color:#fff}
+.app-header .sub{font-size:12px;opacity:.7}
+.hdr-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 18px;border-radius:var(--radius);font-family:'Nanum Gothic',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap}
+.hdr-btn:hover{background:rgba(255,255,255,.25)}
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.back-btn{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:2px 4px;opacity:.85;line-height:1;flex-shrink:0}
+.back-btn:hover{opacity:1}
+
+/* 화면 전환 */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ────────────────────────────────
+   목록 화면
+──────────────────────────────── */
+.list-content{max-width:760px;margin:0 auto;padding:28px 24px}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.list-toolbar h2{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;color:var(--text)}
+.list-empty{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:52px 24px;text-align:center;color:var(--text3);font-size:13px;line-height:2.2;box-shadow:var(--shadow)}
+.list-empty strong{display:block;font-size:15px;color:var(--text2);margin-bottom:4px}
+
+.record-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow);display:flex;align-items:stretch;overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.record-card:hover{border-color:var(--accent2);box-shadow:0 4px 16px rgba(61,90,62,.13)}
+.card-accent{width:5px;background:var(--accent);flex-shrink:0}
+.card-body{padding:14px 18px;flex:1;min-width:0}
+.card-topic{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.card-meta span{font-size:12px;color:var(--text2)}
+.card-badge{background:var(--accent-light);color:var(--accent2);padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700}
+.card-actions{display:flex;align-items:center;padding:0 14px;gap:6px;flex-shrink:0}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Nanum Gothic',sans-serif;color:var(--text2);transition:all .12s;white-space:nowrap}
+.icon-btn:hover{background:var(--surface2);border-color:var(--accent2);color:var(--accent)}
+.icon-btn.del:hover{background:var(--red-light);border-color:#e8bbbb;color:var(--red)}
+
+/* ────────────────────────────────
+   탭 네비
+──────────────────────────────── */
+.tab-nav{display:flex;background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 32px;position:sticky;top:57px;z-index:99}
+.tab-btn{padding:13px 22px 12px;font-family:'Nanum Gothic',sans-serif;font-size:13px;font-weight:700;color:var(--text3);background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap;letter-spacing:.02em}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-btn:hover:not(.active){color:var(--text2)}
+
+/* ────────────────────────────────
+   편집 화면
+──────────────────────────────── */
+.edit-content{max-width:960px;margin:0 auto;padding:28px 24px}
+.section{display:none;animation:fadeIn .18s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow)}
+.block-header{background:var(--surface2);padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.block-title{font-family:'Nanum Myeongjo',serif;font-size:13px;font-weight:700;color:var(--text);letter-spacing:.04em}
+.block-body{padding:18px}
+
+/* 기본정보 표 */
+.info-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.info-tbl td{border:1px solid var(--border);padding:0;vertical-align:middle}
+.info-tbl td.it-lbl{background:var(--surface2);font-size:12px;font-weight:700;color:var(--text2);text-align:center;padding:8px 6px;white-space:nowrap;letter-spacing:.02em}
+.info-tbl td.it-val{padding:8px 10px;font-size:13px;color:var(--text)}
+.info-tbl td input{width:100%;font-family:'Nanum Gothic',sans-serif;font-size:13px;padding:8px 10px;border:none;background:transparent;color:var(--text)}
+.info-tbl td input:focus{outline:none;background:var(--accent-light)}
+.info-tbl tr:hover td:not(.it-lbl):not(.it-val){background:#f9f9f5}
+.print-only{display:none}
+
+/* 그룹원 테이블 */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--surface2);border:1px solid var(--border);padding:7px 8px;font-size:11px;font-weight:700;color:var(--text2);text-align:center;white-space:nowrap}
+td{border:1px solid var(--border);padding:0;vertical-align:middle}
+td.num{text-align:center;font-size:11px;color:var(--text3);padding:4px;background:var(--surface2);width:32px}
+td.name-cell{padding:5px 8px;font-size:12px;background:#fafaf8;min-width:72px}
+td input{width:100%;font-family:'Nanum Gothic',sans-serif;font-size:12px;padding:5px 7px;border:none;background:transparent;color:var(--text);text-align:center}
+td input:focus{outline:none;background:#fffde8}
+td.del-cell{width:30px;text-align:center;background:var(--surface2)}
+td.del-cell button{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:2px 5px;line-height:1;transition:color .12s}
+td.del-cell button:hover{color:var(--red)}
+tr:hover td{background:#f9f9f6}
+tr:hover td.num,tr:hover td.del-cell{background:#eeece7}
+tr:hover td.name-cell{background:#f4f3ee}
+td.att-cell input{font-size:13px;font-weight:700;min-width:44px}
+.att-sel{width:100%;font-family:'Nanum Gothic',sans-serif;font-size:14px;font-weight:700;text-align:center;border:none;background:transparent;cursor:pointer;padding:5px 2px;appearance:none;-webkit-appearance:none}
+.att-sel:focus{outline:none}
+.att-o{color:#1a6e2e;background:#eaf5ec}
+.att-x{color:#7a2020;background:#fdf0f0}
+.att-tri{color:#7a5800;background:#fdf8e8}
+
+/* 버튼 */
+.btn{font-family:'Nanum Gothic',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:4px;border:1px solid var(--border2);background:#fff;color:var(--text2);cursor:pointer;transition:all .12s;white-space:nowrap}
+.btn:hover{background:var(--surface2);border-color:var(--accent2);color:var(--accent)}
+.btn-green{background:var(--accent-light);border-color:var(--accent2);color:var(--accent)}
+.btn-green:hover{background:#d8ead8}
+
+/* 출석부 */
+.att-ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.att-ctrl input{font-family:'Nanum Gothic',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:4px;width:100px;background:#fff;color:var(--text)}
+.att-ctrl input:focus{outline:none;border-color:var(--accent2)}
+.att-hint{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6}
+
+/* 텍스트에어리어 */
+.note-block{margin-bottom:12px}
+.note-block:last-child{margin-bottom:0}
+.note-label{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block;letter-spacing:.02em}
+textarea{font-family:'Nanum Gothic',sans-serif;font-size:13px;width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;background:#fff;color:var(--text);resize:vertical;line-height:1.6;transition:border-color .15s}
+textarea:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent-light)}
+
+/* 인원 수 */
+.count-row{display:flex;gap:16px;margin-bottom:16px;align-items:center}
+.count-item{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px}
+.count-item label{font-size:12px;color:var(--text2);white-space:nowrap}
+.count-item input{font-family:'Nanum Gothic',sans-serif;font-size:14px;font-weight:700;width:52px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;text-align:center;background:#fff;color:var(--text)}
+.count-item input:focus{outline:none;border-color:var(--accent2)}
+.count-item span{font-size:12px;color:var(--text2)}
+
+@media print{
+  body{background:#fff;padding:0;font-size:10pt}
+  .app-header,.tab-nav,.no-print{display:none!important}
+  .screen{display:none!important}
+  .print-only{display:table-cell!important}
+  .block{box-shadow:none;border:1px solid #bbb;page-break-inside:avoid;margin-bottom:14px}
+  .block-header{background:#eee!important}
+  th{background:#eee!important}
+  td.num,td.del-cell,td.name-cell{background:#f5f5f5!important}
+  .att-ctrl,.btn,.del-cell{display:none!important}
+  .edit-content{padding:10px;max-width:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     화면 A : 목록
+═══════════════════════════════════ -->
+<div id="screen-list" class="screen active">
+  <header class="app-header">
+    <h1>Arca봉사자노트</h1>
+    <span class="sub">가톨릭 그룹공부 봉사자 기록 앱</span>
+    <div class="hdr-right">
+      <button class="hdr-btn" onclick="newRecord()">＋ 새 기록 추가</button>
+    </div>
+  </header>
+
+  <div class="list-content">
+    <div class="list-toolbar">
+      <h2 id="list-count">기록 목록</h2>
+    </div>
+    <div id="list-area"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     화면 B : 편집
+═══════════════════════════════════ -->
+<div id="screen-edit" class="screen">
+  <header class="app-header">
+    <button class="back-btn" onclick="goList()" title="목록으로">&#8592;</button>
+    <h1 id="edit-title" style="font-size:15px">그룹공부 기록</h1>
+    <div class="hdr-right">
+      <button class="hdr-btn" onclick="printPDF()">🖨️ PDF 저장</button>
+    </div>
+  </header>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="showTab(0)">① 시작 보고서</button>
+    <button class="tab-btn" onclick="showTab(1)">② 출석부</button>
+    <button class="tab-btn" onclick="showTab(2)">③ 마침 보고서</button>
+  </nav>
+
+  <main class="edit-content">
+
+    <!-- 시작 보고서 -->
+    <div class="section active" id="sec0">
+      <div class="block">
+        <div class="block-header">
+          <span class="block-title">봉사자 기본정보 · 시작 보고서</span>
+        </div>
+        <div class="block-body" style="padding:0">
+          <table class="info-tbl">
+            <colgroup><col style="width:100px"><col><col style="width:100px"><col><col style="width:100px"><col></colgroup>
+            <tbody>
+              <tr>
+                <td class="it-lbl">공부하는 곳</td>
+                <td><input type="text" id="parish" placeholder="예) 구포성당" oninput="autoSave()"></td>
+                <td class="it-lbl">요일 · 시간</td>
+                <td><input type="text" id="schedule" placeholder="예) 월 18:30" oninput="autoSave()"></td>
+                <td class="it-lbl">그룹 공부 주제</td>
+                <td><input type="text" id="topic" placeholder="예) 요한" oninput="autoSave();updateEditTitle()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">이름</td>
+                <td><input type="text" id="vol_name" placeholder="봉사자 이름" oninput="autoSave()"></td>
+                <td class="it-lbl">세례명</td>
+                <td><input type="text" id="vol_bap" placeholder="세례명" oninput="autoSave()"></td>
+                <td class="it-lbl">생년월일</td>
+                <td><input type="text" id="vol_birth" placeholder="예) 1980.01.01" oninput="autoSave()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">주소 (자택)</td>
+                <td colspan="5"><input type="text" id="addr_home" placeholder="자택 주소" style="width:100%" oninput="autoSave()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">대학 / 직장</td>
+                <td colspan="5"><input type="text" id="addr_work" placeholder="대학 또는 직장" style="width:100%" oninput="autoSave()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">연락처</td>
+                <td><input type="tel" id="phone" placeholder="000-0000-0000" oninput="autoSave()"></td>
+                <td class="it-lbl">이메일</td>
+                <td colspan="3"><input type="email" id="email" placeholder="이메일 주소" style="width:100%" oninput="autoSave()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">본당</td>
+                <td><input type="text" id="vol_parish" placeholder="소속 본당" oninput="autoSave()"></td>
+                <td class="it-lbl">고유번호</td>
+                <td><input type="text" id="vol_id" placeholder="고유번호" oninput="autoSave()"></td>
+                <td class="it-lbl" style="background:var(--accent);color:#fff">시작일</td>
+                <td><input type="date" id="date_start" style="width:100%" onchange="autoSave();updateEditTitle()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl print-only" colspan="2" style="text-align:center;color:var(--text3);font-size:11px;background:var(--surface2)">※ 이 보고서는 그룹 형성 즉시 ARCA 센터에 제출</td>
+                <td class="it-lbl print-only" colspan="2" style="text-align:center;color:var(--text3);font-size:11px;background:var(--surface2)">Tel. 051) 519-0483 / bsarca1@gmail.com</td>
+                <td colspan="2" class="print-only"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-header">
+          <span class="block-title">그룹원 명단</span>
+          <button class="btn btn-green no-print" onclick="addMember()">＋ 그룹원 추가</button>
+        </div>
+        <div class="block-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table id="member-table">
+              <thead>
+                <tr>
+                  <th style="width:32px">번호</th>
+                  <th style="min-width:80px">이름</th>
+                  <th style="min-width:80px">세례명</th>
+                  <th style="min-width:110px">핸드폰</th>
+                  <th style="min-width:130px">이메일</th>
+                  <th style="min-width:90px">생년월일</th>
+                  <th style="min-width:80px">본당</th>
+                  <th class="no-print" style="width:30px"></th>
+                </tr>
+              </thead>
+              <tbody id="member-body">
+                <tr><td colspan="8" style="text-align:center;padding:24px;color:#aaa;font-size:12px">「그룹원 추가」 버튼을 눌러 그룹원을 입력하세요.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 출석부 -->
+    <div class="section" id="sec1">
+      <div class="block">
+        <div class="block-header">
+          <span class="block-title">출석부</span>
+          <div class="att-ctrl no-print">
+            <input type="text" id="new-date" placeholder="날짜 (예: 1/26)" onkeydown="if(event.key==='Enter')addDateCol()">
+            <button class="btn btn-green" onclick="addDateCol()">＋ 날짜 추가</button>
+            <button class="btn" onclick="removeLastDate()" style="color:#7a2020;border-color:#d4aaaa">× 마지막 삭제</button>
+          </div>
+        </div>
+        <div class="block-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table id="att-table">
+              <thead><tr id="att-head-row"><th style="width:32px">번호</th><th style="min-width:80px">이름</th></tr></thead>
+              <tbody id="att-body"></tbody>
+            </table>
+          </div>
+          <div class="att-hint" style="padding:10px 18px">셀을 클릭해 선택하세요 &nbsp;·&nbsp; <strong style="color:#1a6e2e">○ 출석</strong> &nbsp; <strong style="color:#7a2020">× 결석</strong> &nbsp; <strong style="color:#7a5800">△ 지각/조퇴</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 마침 보고서 -->
+    <div class="section" id="sec2">
+      <div class="block">
+        <div class="block-header"><span class="block-title">기본정보</span></div>
+        <div class="block-body" style="padding:0">
+          <table class="info-tbl">
+            <colgroup><col style="width:100px"><col><col style="width:90px"><col><col style="width:90px"><col></colgroup>
+            <tbody>
+              <tr>
+                <td class="it-lbl">그룹 공부 주제</td>
+                <td id="r3_topic" class="it-val"></td>
+                <td class="it-lbl" colspan="2"></td>
+                <td class="it-lbl" style="background:var(--accent);color:#fff">시작일</td>
+                <td id="r3_start" class="it-val"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">모임장소</td>
+                <td id="r3_parish" class="it-val"></td>
+                <td class="it-lbl">요일 · 시간</td>
+                <td id="r3_schedule" class="it-val"></td>
+                <td class="it-lbl" style="background:var(--accent);color:#fff">마침일</td>
+                <td><input type="date" id="date_end" style="width:100%;font-family:'Nanum Gothic',sans-serif;font-size:13px;padding:8px 10px;border:none;background:transparent;color:var(--text)" onchange="autoSave();calcPeriod()"></td>
+              </tr>
+              <tr>
+                <td class="it-lbl">봉사자</td>
+                <td id="r3_vol" class="it-val" colspan="3"></td>
+                <td class="it-lbl">총 공부 기간</td>
+                <td id="r3_period" class="it-val"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-header"><span class="block-title">마침 그룹원 명단</span></div>
+        <div class="block-body">
+          <div class="count-row">
+            <div class="count-item">
+              <label>시작 그룹원 수</label>
+              <input type="number" id="cnt_start" min="0" placeholder="0" oninput="autoSave()">
+              <span>명</span>
+            </div>
+            <div class="count-item">
+              <label>마침 그룹원 수</label>
+              <input type="number" id="cnt_end" min="0" placeholder="0" oninput="autoSave()">
+              <span>명</span>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table id="report-table">
+              <thead>
+                <tr>
+                  <th style="width:32px">번호</th>
+                  <th style="min-width:80px">이름</th>
+                  <th style="min-width:80px">세례명</th>
+                  <th style="min-width:110px">지금까지 받은 연수</th>
+                  <th style="min-width:110px">그룹공부 기록완료</th>
+                  <th style="min-width:130px">연수사항 명부 기록완료</th>
+                </tr>
+              </thead>
+              <tbody id="report-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-header"><span class="block-title">특기사항 · 소감</span></div>
+        <div class="block-body">
+          <div class="note-block">
+            <label class="note-label">인원변동 사유 <span style="font-weight:400;color:#aaa">(변동 시 작성)</span></label>
+            <textarea id="note_change" rows="2" placeholder="변동이 있는 경우에만 작성하세요." oninput="autoSave()"></textarea>
+          </div>
+          <div class="note-block">
+            <label class="note-label">그룹운영 특기사항</label>
+            <textarea id="note_special" rows="3" placeholder="그룹 운영 중 특기할 사항을 기록하세요." oninput="autoSave()"></textarea>
+          </div>
+          <div class="note-block">
+            <label class="note-label">건의사항</label>
+            <textarea id="note_suggest" rows="2" placeholder="본당이나 교구에 건의할 사항을 작성하세요." oninput="autoSave()"></textarea>
+          </div>
+          <div class="note-block">
+            <label class="note-label">소감</label>
+            <textarea id="note_feeling" rows="4" placeholder="그룹공부를 마치며 느낀 점을 자유롭게 적어주세요." oninput="autoSave()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   데이터
+════════════════════════════════════ */
+let records = [];
+let currentId = null;
+
+function makeRecord() {
+  return {
+    id: Date.now(),
+    topic:'', parish:'', schedule:'', date_start:'',
+    vol_name:'', vol_bap:'', vol_birth:'',
+    addr_home:'', addr_work:'',
+    phone:'', email:'', vol_parish:'', vol_id:'',
+    date_end:'', cnt_start:'', cnt_end:'',
+    note_change:'', note_special:'', note_suggest:'', note_feeling:'',
+    members:[], dateCols:[], attData:{}, reportData:{}
+  };
+}
+
+function currentRec() {
+  return records.find(r => r.id === currentId) || null;
+}
+
+/* ════════════════════════════════════
+   저장 / 불러오기 (localStorage)
+════════════════════════════════════ */
+function saveAll() {
+  try { localStorage.setItem('v3set_records', JSON.stringify(records)); } catch(e) {}
+}
+function loadAll() {
+  try {
+    const raw = localStorage.getItem('v3set_records');
+    if (raw) records = JSON.parse(raw);
+  } catch(e) { records = []; }
+}
+
+/* ════════════════════════════════════
+   화면 전환
+════════════════════════════════════ */
+function goList() {
+  autoSave();
+  document.getElementById('screen-list').classList.add('active');
+  document.getElementById('screen-edit').classList.remove('active');
+  renderList();
+}
+
+function goEdit(id) {
+  currentId = id;
+  document.getElementById('screen-list').classList.remove('active');
+  document.getElementById('screen-edit').classList.add('active');
+  showTab(0);
+  loadFormFromRecord();
+  updateEditTitle();
+}
+
+/* ════════════════════════════════════
+   목록 화면
+════════════════════════════════════ */
+function newRecord() {
+  const rec = makeRecord();
+  records.unshift(rec);
+  saveAll();
+  goEdit(rec.id);
+}
+
+function deleteRecord(id, e) {
+  e.stopPropagation();
+  const rec = records.find(r => r.id === id);
+  const label = rec ? (rec.topic || rec.parish || '이 기록') : '이 기록';
+  if (!confirm(`「${label}」을 삭제할까요?\n삭제 후 복구할 수 없습니다.`)) return;
+  records = records.filter(r => r.id !== id);
+  saveAll();
+  renderList();
+}
+
+function renderList() {
+  const area  = document.getElementById('list-area');
+  const countEl = document.getElementById('list-count');
+  countEl.textContent = `기록 목록 (총 ${records.length}건)`;
+
+  if (records.length === 0) {
+    area.innerHTML = `<div class="list-empty"><strong>아직 기록이 없습니다</strong>「+ 새 기록 추가」 버튼을 눌러 첫 번째 기록을 시작하세요.</div>`;
+    return;
+  }
+
+  area.innerHTML = records.map(rec => {
+    const topic  = esc(rec.topic  || '(주제 미입력)');
+    const parish = esc(rec.parish || '장소 미입력');
+    const start  = rec.date_start ? fmtDate(rec.date_start) : '시작일 미입력';
+    const end    = rec.date_end   ? ' ~ ' + fmtDate(rec.date_end) : '';
+    const mCnt   = (rec.members || []).length;
+    return `
+    <div class="record-card" onclick="goEdit(${rec.id})">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-topic">${topic}</div>
+        <div class="card-meta">
+          <span>📍 ${parish}</span>
+          <span>📅 ${start}${end}</span>
+          ${mCnt > 0 ? `<span class="card-badge">그룹원 ${mCnt}명</span>` : ''}
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="icon-btn" onclick="goEdit(${rec.id});event.stopPropagation()">편집</button>
+        <button class="icon-btn del" onclick="deleteRecord(${rec.id},event)">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ════════════════════════════════════
+   폼 필드 목록
+════════════════════════════════════ */
+const FIELDS = ['topic','parish','schedule','date_start','vol_name','vol_bap','vol_birth','addr_home','addr_work','phone','email','vol_parish','vol_id','date_end','cnt_start','cnt_end','note_change','note_special','note_suggest','note_feeling'];
+
+function loadFormFromRecord() {
+  const rec = currentRec();
+  if (!rec) return;
+  FIELDS.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) el.value = rec[f] || '';
+  });
+  renderMembers();
+  renderAtt();
+}
+
+function autoSave() {
+  const rec = currentRec();
+  if (!rec) return;
+  FIELDS.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) rec[f] = el.value;
+  });
+  saveAll();
+}
+
+function updateEditTitle() {
+  const rec = currentRec();
+  if (!rec) return;
+  const t = [rec.topic, rec.parish].filter(Boolean).join(' · ') || '새 기록';
+  document.getElementById('edit-title').textContent = t;
+}
+
+/* ════════════════════════════════════
+   탭
+════════════════════════════════════ */
+function showTab(i) {
+  document.querySelectorAll('.tab-btn').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.section').forEach((s,j) => s.classList.toggle('active', i===j));
+  if (i===1) renderAtt();
+  if (i===2) { fillReportHeader(); renderReport(); }
+}
+
+/* ════════════════════════════════════
+   그룹원
+════════════════════════════════════ */
+function addMember() {
+  const rec = currentRec(); if (!rec) return;
+  rec.members.push({name:'',bap:'',phone:'',email:'',birth:'',parish:''});
+  saveAll(); renderMembers();
+}
+
+function removeMember(i) {
+  const rec = currentRec(); if (!rec) return;
+  if (!confirm(`${i+1}번 그룹원을 삭제할까요?`)) return;
+  rec.members.splice(i,1);
+  saveAll(); renderMembers();
+}
+
+function updateMember(i, field, val) {
+  const rec = currentRec(); if (!rec) return;
+  rec.members[i][field] = val; saveAll();
+}
+
+function renderMembers() {
+  const rec = currentRec();
+  const tbody = document.getElementById('member-body');
+  if (!rec || rec.members.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#aaa;font-size:12px">「그룹원 추가」 버튼을 눌러 그룹원을 입력하세요.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rec.members.map((m,i) => `
+    <tr>
+      <td class="num">${i+1}</td>
+      <td><input value="${esc(m.name)}"   onchange="updateMember(${i},'name',this.value)"   placeholder="이름"></td>
+      <td><input value="${esc(m.bap)}"    onchange="updateMember(${i},'bap',this.value)"    placeholder="세례명"></td>
+      <td><input value="${esc(m.phone)}"  onchange="updateMember(${i},'phone',this.value)"  placeholder="010-0000-0000"></td>
+      <td><input value="${esc(m.email)}"  onchange="updateMember(${i},'email',this.value)"  placeholder="이메일"></td>
+      <td><input value="${esc(m.birth)}"  onchange="updateMember(${i},'birth',this.value)"  placeholder="생년월일"></td>
+      <td><input value="${esc(m.parish)}" onchange="updateMember(${i},'parish',this.value)" placeholder="본당"></td>
+      <td class="del-cell no-print"><button onclick="removeMember(${i})" title="삭제">✕</button></td>
+    </tr>`).join('');
+}
+
+/* ════════════════════════════════════
+   출석부
+════════════════════════════════════ */
+function addDateCol() {
+  const rec = currentRec(); if (!rec) return;
+  const v = document.getElementById('new-date').value.trim();
+  if (!v) { alert('날짜를 입력하세요. 예) 1/26'); return; }
+  rec.dateCols.push(v);
+  document.getElementById('new-date').value = '';
+  saveAll(); renderAtt();
+}
+
+function removeLastDate() {
+  const rec = currentRec(); if (!rec || rec.dateCols.length===0) return;
+  if (!confirm(`「${rec.dateCols[rec.dateCols.length-1]}」 열을 삭제할까요?`)) return;
+  rec.dateCols.pop(); saveAll(); renderAtt();
+}
+
+function updateAtt(i, j, val) {
+  const rec = currentRec(); if (!rec) return;
+  rec.attData[`${i}_${j}`] = val; saveAll();
+  const sel = event.target;
+  sel.className = 'att-sel att-' + (val==='○'?'o':val==='×'?'x':val==='△'?'tri':'');
+}
+
+function renderAtt() {
+  const rec = currentRec();
+  const cols = rec ? rec.dateCols : [];
+  document.getElementById('att-head-row').innerHTML =
+    `<th style="width:32px">번호</th><th style="min-width:80px">이름</th>` +
+    cols.map(d=>`<th style="min-width:48px">${d}</th>`).join('');
+  const tbody = document.getElementById('att-body');
+  if (!rec || rec.members.length===0) {
+    tbody.innerHTML = `<tr><td colspan="${2+cols.length}" style="text-align:center;padding:20px;color:#aaa;font-size:12px">① 시작 보고서 탭에서 먼저 그룹원을 추가하세요.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rec.members.map((m,i) => {
+    const cells = cols.map((_,j)=>{
+      const v = rec.attData[`${i}_${j}`]||'';
+      const opts = ['','○','×','△'].map(o=>`<option value="${o}"${v===o?' selected':''}>${o||'—'}</option>`).join('');
+      return `<td class="att-cell"><select onchange="updateAtt(${i},${j},this.value)" class="att-sel att-${v==='○'?'o':v==='×'?'x':v==='△'?'tri':''}">${opts}</select></td>`;
+    }).join('');
+    return `<tr><td class="num">${i+1}</td><td class="name-cell">${esc(m.name)||'(미입력)'}</td>${cells}</tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════
+   마침 보고서
+════════════════════════════════════ */
+function fillReportHeader() {
+  const rec = currentRec(); if (!rec) return;
+  setText('r3_topic',    rec.topic);
+  setText('r3_parish',   rec.parish);
+  setText('r3_schedule', rec.schedule);
+  setText('r3_vol',      [rec.vol_name, rec.vol_bap].filter(Boolean).join(' '));
+  if (rec.date_start) {
+    const d = new Date(rec.date_start);
+    setText('r3_start', `${String(d.getFullYear()).slice(2)}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`);
+  } else { setText('r3_start',''); }
+  calcPeriod();
+}
+
+function calcPeriod() {
+  const rec = currentRec();
+  const el  = document.getElementById('r3_period');
+  if (!el || !rec) return;
+  const s = rec.date_start;
+  const e = document.getElementById('date_end')?.value || rec.date_end;
+  if (!s || !e) { el.textContent=''; return; }
+  const ds=new Date(s), de=new Date(e);
+  if (de<ds) { el.textContent=''; return; }
+  let y=de.getFullYear()-ds.getFullYear(), m=de.getMonth()-ds.getMonth();
+  if(m<0){y--;m+=12;}
+  el.textContent=`${y}년 ${m}개월`;
+}
+
+function updateReport(i, field, val) {
+  const rec = currentRec(); if (!rec) return;
+  if (!rec.reportData[i]) rec.reportData[i]={train:'',rec:'',reg:''};
+  rec.reportData[i][field]=val; saveAll();
+}
+
+function renderReport() {
+  const rec = currentRec();
+  const tbody = document.getElementById('report-body');
+  if (!rec || rec.members.length===0) {
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa;font-size:12px">① 시작 보고서 탭에서 먼저 그룹원을 추가하세요.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rec.members.map((m,i) => {
+    if (!rec.reportData[i]) rec.reportData[i]={train:'',rec:'',reg:''};
+    const rd = rec.reportData[i];
+    return `<tr>
+      <td class="num">${i+1}</td>
+      <td class="name-cell">${esc(m.name)||'(미입력)'}</td>
+      <td class="name-cell">${esc(m.bap)||''}</td>
+      <td><input value="${esc(rd.train)}" onchange="updateReport(${i},'train',this.value)" placeholder="예) 1차"></td>
+      <td><input value="${esc(rd.rec)}"   onchange="updateReport(${i},'rec',this.value)"   placeholder="완료 / 미완료"></td>
+      <td><input value="${esc(rd.reg)}"   onchange="updateReport(${i},'reg',this.value)"   placeholder="완료 / 미완료"></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════
+   유틸
+════════════════════════════════════ */
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setText(id,val){ const el=document.getElementById(id); if(el) el.textContent=val||''; }
+
+/* ════════════════════════════════════
+   PDF 저장
+════════════════════════════════════ */
+function printPDF() {
+  autoSave();
+  const rec = currentRec(); if (!rec) return;
+
+  const startDate = (rec.date_start||'').replace(/-/g,'.');
+  const endDate   = (rec.date_end  ||'').replace(/-/g,'.');
+  const volStr    = [rec.vol_name, rec.vol_bap].filter(Boolean).join(' ');
+
+  let periodStr='';
+  if (rec.date_start && rec.date_end) {
+    const ds=new Date(rec.date_start), de=new Date(rec.date_end);
+    if(de>=ds){ let y=de.getFullYear()-ds.getFullYear(),m=de.getMonth()-ds.getMonth(); if(m<0){y--;m+=12;} periodStr=`${y}년 ${m}개월`; }
+  }
+  const toShort = iso => { if(!iso)return''; const d=new Date(iso); return `${String(d.getFullYear()).slice(2)}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; };
+
+  const memberRows = rec.members.length
+    ? rec.members.map((m,i)=>`<tr><td class="num">${i+1}</td><td>${esc(m.name)}</td><td>${esc(m.bap)}</td><td>${esc(m.phone)}</td><td>${esc(m.email)}</td><td>${esc(m.birth)}</td><td>${esc(m.parish)}</td></tr>`).join('')
+    : `<tr><td colspan="7" style="text-align:center;padding:12px;color:#aaa">그룹원 없음</td></tr>`;
+
+  const attHead = rec.dateCols.map(d=>`<th>${d}</th>`).join('');
+  const attRows = rec.members.map((m,i)=>{
+    const cells=rec.dateCols.map((_,j)=>`<td>${esc(rec.attData[`${i}_${j}`]||'')}</td>`).join('');
+    return `<tr><td class="num">${i+1}</td><td>${esc(m.name)}</td>${cells}</tr>`;
+  }).join('');
+
+  const reportRows = rec.members.map((m,i)=>{
+    const rd=rec.reportData[i]||{};
+    return `<tr><td class="num">${i+1}</td><td>${esc(m.name)}</td><td>${esc(m.bap)}</td><td>${esc(rd.train||'')}</td><td>${esc(rd.rec||'')}</td><td>${esc(rd.reg||'')}</td></tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="ko"><head>
+<meta charset="UTF-8"><title>Arca봉사자노트</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nanum Gothic',sans-serif;font-size:10pt;color:#111;padding:22px 28px}
+h2{font-family:'Nanum Myeongjo',serif;font-size:13pt;font-weight:700;margin:20px 0 10px;padding-bottom:5px;border-bottom:2px solid #3d5a3e;color:#3d5a3e}
+h2:first-child{margin-top:0}
+table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:9.5pt}
+th,td{border:0.5px solid #aaa;padding:5px 7px;text-align:center}
+th{background:#eef2ee;font-weight:700;font-size:9pt;color:#3d5a3e}
+td.lbl{background:#f5f7f5;font-weight:700;color:#3d5a3e;text-align:center}
+td.lbl-acc{background:#3d5a3e;color:#fff;font-weight:700;text-align:center}
+td.val{text-align:left;padding-left:10px}
+td.num{background:#f5f7f5;width:30px;color:#888}
+.note-label{font-weight:700;font-size:9.5pt;color:#3d5a3e;margin-top:12px;margin-bottom:3px;display:block}
+.note-val{border:0.5px solid #bbb;border-radius:3px;padding:7px 10px;min-height:38px;font-size:9.5pt;white-space:pre-wrap;margin-bottom:10px;line-height:1.6}
+.count-row{display:flex;gap:20px;margin-bottom:12px}
+.count-item{display:flex;align-items:center;gap:8px;background:#eef2ee;border:0.5px solid #bbb;border-radius:4px;padding:7px 14px}
+.count-item label{font-size:9.5pt;color:#3d5a3e;font-weight:700}
+.count-val{font-size:12pt;font-weight:700;min-width:30px;text-align:center}
+.print-btn{margin-bottom:16px;padding:8px 20px;background:#3d5a3e;color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:'Nanum Gothic',sans-serif;font-size:13px;font-weight:700}
+@media print{body{padding:12px 16px}table{page-break-inside:avoid}.print-btn{display:none}}
+</style></head><body>
+<div style="text-align:right;margin-bottom:12px;font-size:9pt;color:#888">Arca봉사자노트 · ${new Date().toLocaleDateString('ko-KR')}</div>
+<button class="print-btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+
+<h2>① 봉사자 기본정보 · 시작 보고서</h2>
+<table>
+<tr><td class="lbl">공부하는 곳</td><td class="val">${esc(rec.parish)}</td><td class="lbl">요일 · 시간</td><td class="val">${esc(rec.schedule)}</td><td class="lbl">그룹 공부 주제</td><td class="val">${esc(rec.topic)}</td></tr>
+<tr><td class="lbl">이름</td><td class="val">${esc(rec.vol_name)}</td><td class="lbl">세례명</td><td class="val">${esc(rec.vol_bap)}</td><td class="lbl">생년월일</td><td class="val">${esc(rec.vol_birth)}</td></tr>
+<tr><td class="lbl">주소 (자택)</td><td class="val" colspan="5">${esc(rec.addr_home)}</td></tr>
+<tr><td class="lbl">대학 / 직장</td><td class="val" colspan="5">${esc(rec.addr_work)}</td></tr>
+<tr><td class="lbl">연락처</td><td class="val">${esc(rec.phone)}</td><td class="lbl">이메일</td><td class="val" colspan="3">${esc(rec.email)}</td></tr>
+<tr><td class="lbl">본당</td><td class="val">${esc(rec.vol_parish)}</td><td class="lbl">고유번호</td><td class="val">${esc(rec.vol_id)}</td><td class="lbl-acc">시작일</td><td class="val">${startDate}</td></tr>
+<tr><td class="lbl" colspan="2" style="font-size:8.5pt;color:#666;font-weight:400">※ 이 보고서는 그룹 형성 즉시 ARCA 센터에 제출</td><td class="lbl" colspan="2" style="font-size:8.5pt;color:#666;font-weight:400">Tel. 051) 519-0483 / bsarca1@gmail.com</td><td colspan="2"></td></tr>
+</table>
+
+<h2>그룹원 명단</h2>
+<table>
+<thead><tr><th>번호</th><th>이름</th><th>세례명</th><th>핸드폰</th><th>이메일</th><th>생년월일</th><th>본당</th></tr></thead>
+<tbody>${memberRows}</tbody>
+</table>
+
+<h2>② 출석부</h2>
+<table>
+<thead><tr><th>번호</th><th>이름</th>${attHead}</tr></thead>
+<tbody>${attRows||`<tr><td colspan="${2+rec.dateCols.length}" style="text-align:center;padding:12px;color:#aaa">출석 데이터 없음</td></tr>`}</tbody>
+</table>
+
+<h2>③ 마침 보고서</h2>
+<table>
+<tr><td class="lbl">그룹 공부 주제</td><td class="val" colspan="3">${esc(rec.topic)}</td><td class="lbl-acc">시작일</td><td class="val">${toShort(rec.date_start)}</td></tr>
+<tr><td class="lbl">모임장소</td><td class="val">${esc(rec.parish)}</td><td class="lbl">요일 · 시간</td><td class="val">${esc(rec.schedule)}</td><td class="lbl-acc">마침일</td><td class="val">${toShort(rec.date_end)}</td></tr>
+<tr><td class="lbl">봉사자</td><td class="val" colspan="3">${esc(volStr)}</td><td class="lbl">총 공부 기간</td><td class="val">${periodStr}</td></tr>
+</table>
+<div class="count-row">
+<div class="count-item"><label>시작 그룹원 수</label><span class="count-val">${esc(rec.cnt_start)||'—'}</span><span style="font-size:9.5pt;color:#3d5a3e">명</span></div>
+<div class="count-item"><label>마침 그룹원 수</label><span class="count-val">${esc(rec.cnt_end)||'—'}</span><span style="font-size:9.5pt;color:#3d5a3e">명</span></div>
+</div>
+<table>
+<thead><tr><th>번호</th><th>이름</th><th>세례명</th><th>지금까지 받은 연수</th><th>그룹공부 기록완료</th><th>연수사항 명부 기록완료</th></tr></thead>
+<tbody>${reportRows||`<tr><td colspan="6" style="text-align:center;padding:12px;color:#aaa">그룹원 없음</td></tr>`}</tbody>
+</table>
+<label class="note-label">인원변동 사유</label><div class="note-val">${esc(rec.note_change)||'&nbsp;'}</div>
+<label class="note-label">그룹운영 특기사항</label><div class="note-val">${esc(rec.note_special)||'&nbsp;'}</div>
+<label class="note-label">건의사항</label><div class="note-val">${esc(rec.note_suggest)||'&nbsp;'}</div>
+<label class="note-label">소감</label><div class="note-val">${esc(rec.note_feeling)||'&nbsp;'}</div>
+</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.target   = '_blank';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+/* ════════════════════════════════════
+   초기화
+════════════════════════════════════ */
+loadAll();
+renderList();
+</script>
+</body>
+</html>
