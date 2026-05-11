@@ -374,7 +374,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
         <div class="guide-title"><span class="guide-num">3</span>② 출석부 입력</div>
         <div class="guide-body">
           <ul>
-            <li>날짜 입력란에 <strong>1</strong>과 <strong>1/26</strong> 형식으로 입력 후 <span class="guide-chip chip-g">＋ 추가</span>를 눌러요.</li>
+            <li>날짜 입력란에 <strong>1</strong>과 <strong>9/9</strong> 형식으로 입력 후 <span class="guide-chip chip-g">＋ 추가</span>를 눌러요.</li>
             <li>추가된 날짜를 <strong>탭하면</strong> 수정하거나 삭제할 수 있어요.</li>
             <li>각 그룹원의 출결을 아래에서 선택하세요:</li>
           </ul>
@@ -441,7 +441,7 @@ body{font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text
     <div class="modal-body" style="padding:20px">
       <div class="field" style="margin-bottom:16px">
         <label>날짜 수정</label>
-        <input type="text" id="date-edit-input" placeholder="예) 1/26" style="font-size:18px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;width:100%;font-family:'Nanum Gothic',sans-serif;color:var(--text)">
+        <input type="text" id="date-edit-input" placeholder="예) 1과 9/9" style="font-size:18px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;width:100%;font-family:'Nanum Gothic',sans-serif;color:var(--text)">
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-accent" style="flex:1;justify-content:center;padding:12px" onclick="confirmDateEdit()">✔ 저장</button>
@@ -597,7 +597,7 @@ function renderMembers(){
 function addDateCol(){
   const rec=currentRec();if(!rec)return;
   const v=document.getElementById('new-date').value.trim();
-  if(!v){alert('날짜를 입력하세요. 예) 1/26');return;}
+  if(!v){alert('날짜를 입력하세요. 예) 1과 1/26');return;}
   rec.dateCols.push(v);
   document.getElementById('new-date').value='';
   saveAll();renderAtt();renderDateChips();
@@ -677,7 +677,7 @@ function renderAtt(){
 function renderR3Summary(){ const rec=currentRec();const el=document.getElementById('r3-summary');if(!el||!rec)return; const v=[rec.vol_name,rec.vol_bap].filter(Boolean).join(' '); el.innerHTML=`<strong>${rec.topic||'—'}</strong><br>📍 ${rec.parish||'—'} &nbsp;·&nbsp; ${rec.schedule||'—'}<br>봉사자: ${v||'—'} &nbsp;·&nbsp; 시작일: ${rec.date_start?fmtDate(rec.date_start):'—'}`; calcPeriod(); }
 function calcPeriod(){ const rec=currentRec();const pe=document.getElementById('r3_period');const wr=document.getElementById('r3-period-wrap');if(!rec||!pe)return; const s=rec.date_start,e=document.getElementById('date_end')?.value||rec.date_end; if(!s||!e){if(wr)wr.style.display='none';return;} const ds=new Date(s),de=new Date(e);if(de<ds){if(wr)wr.style.display='none';return;} let y=de.getFullYear()-ds.getFullYear(),m=de.getMonth()-ds.getMonth();if(m<0){y--;m+=12;} pe.textContent=`${y}년 ${m}개월`;if(wr)wr.style.display='block'; }
 function updateReport(i,field,val){ const rec=currentRec();if(!rec)return; if(!rec.reportData[i])rec.reportData[i]={train:'',rec:'',reg:''}; rec.reportData[i][field]=val;saveAll(); }
-function renderReport(){ const rec=currentRec();const el=document.getElementById('report-list');if(!rec||!rec.members.length){el.innerHTML=`<div class="empty-hint">① 시작 보고서에서 그룹원을 추가하세요.</div>`;return;} el.innerHTML=rec.members.map((m,i)=>{ if(!rec.reportData[i])rec.reportData[i]={train:'',rec:'',reg:''};const rd=rec.reportData[i]; return`<div class="report-card"><div class="report-card-hdr">${i+1}. ${esc(m.name)||'(미입력)'} <span style="font-size:11px;color:var(--text3)">${esc(m.bap)||''}</span></div><div class="report-card-body"><div class="report-field"><label>지금까지 받은 연수</label><input value="${esc(rd.train)}" onchange="updateReport(${i},'train',this.value)" placeholder="예) 1차"></div></div></div>`; }).join(''); }
+function renderReport(){ const rec=currentRec();const el=document.getElementById('report-list');if(!rec||!rec.members.length){el.innerHTML=`<div class="empty-hint">① 시작 보고서에서 그룹원을 추가하세요.</div>`;return;} el.innerHTML=rec.members.map((m,i)=>{ if(!rec.reportData[i])rec.reportData[i]={train:'',rec:'',reg:''};const rd=rec.reportData[i]; return`<div class="report-card"><div class="report-card-hdr">${i+1}. ${esc(m.name)||'(미입력)'} <span style="font-size:11px;color:var(--text3)">${esc(m.bap)||''}</span></div><div class="report-card-body"><div class="report-field"><label>지금까지 받은 연수</label><input value="${esc(rd.train)}" onchange="updateReport(${i},'train',this.value)" placeholder="예) 72차 탈출기"></div></div></div>`; }).join(''); }
 
 /* ════════ 유틸 ════════ */
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
