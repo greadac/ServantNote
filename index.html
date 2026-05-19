@@ -4,7 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Arca봉사자노트</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Cg transform='translate(32,32)' stroke='%23222' stroke-width='2.2' fill='none' stroke-linecap='round'%3E%3Cellipse cx='-2' cy='0' rx='16' ry='9'/%3E%3Ccircle cx='-10' cy='-2' r='2' fill='%23222' stroke='none'/%3E%3Cline x1='-4' y1='-7' x2='-4' y2='7'/%3E%3Cline x1='0' y1='-7' x2='0' y2='7'/%3E%3Cline x1='4' y1='-6' x2='4' y2='6'/%3E%3Cline x1='8' y1='-4' x2='8' y2='4'/%3E%3Cpath d='M14,0 L20,-7'/%3E%3Cpath d='M14,0 L20,7'/%3E%3Cpath d='M14,0 L22,0'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="봉사자노트">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#3d5a3e">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -733,6 +740,15 @@ function printPDF(tab){
 /* ════════ 초기화 ════════ */
 loadAll();
 renderList();
+
+// PWA Service Worker 등록
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(function(reg) { console.log('SW 등록 완료:', reg.scope); })
+      .catch(function(err) { console.log('SW 등록 실패:', err); });
+  });
+}
 </script>
 </body>
 </html>
